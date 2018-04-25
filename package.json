@@ -1,0 +1,23 @@
+{
+  "name": "tinker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lucas You",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "bootstrap": "^4.1.0",
+    "datatables.net-bs": "^1.10.16",
+    "datatables.net-editor-server": "^1.7.3",
+    "express": "^4.16.3",
+    "express-handlebars": "^3.0.0",
+    "hbs": "^4.0.1",
+    "jquery": "^3.3.1",
+    "knew": "0.0.0",
+    "mysql": "^2.15.0"
+  }
+}
