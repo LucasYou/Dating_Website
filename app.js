@@ -187,8 +187,8 @@ app.post("/sign-in.html", function(req,res){
                                         //is a manager
                                         var db_employee_ssn = 'SELECT ssn FROM employee WHERE ssn = ' + connection.escape(ssn[0].ssn);
                                         connection.query(db_employee_ssn, function(error, employee_ssn, fields){
-                                            connection.query("SELECT * FROM user, person WHERE user.ssn = person.ssn", function(error, user, fields){
-                                                res.render('homepage-manager.hbs',{
+                                            connection.query("SELECT *, DATE_FORMAT(date_of_last_act, '%Y-%m-%d %T') as date_of_last_act FROM user, person WHERE user.ssn = person.ssn", function(error, user, fields){
+                                                res.render('./homepage-manager.hbs',{
                                                     users : user
                                                 });
                                             });
