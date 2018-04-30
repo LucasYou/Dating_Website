@@ -109,6 +109,19 @@ app.get('/add-employee.hbs', (req,res)=>{
     res.render('add-employee.hbs');
 });
 
+
+app.get('/add-date.hbs', (req,res)=>{
+    connection.query("SELECT * FROM profile", function(error, user, fields){
+        connection.query("SELECT * FROM employee", function(error, reps, fields){
+            console.log(user);
+            res.render('add-date.hbs',{
+                users : user,
+                reps : reps
+            });
+        });
+    });
+});
+
 app.get('/edit-user/:ssn', (req,res)=>{
     connection.query("SELECT ssn, ppp,rating, DATE_FORMAT(date_of_last_act, '%Y-%m-%d %T') as date_of_last_act FROM user WHERE ssn ='"+req.params.ssn +"'", function(err,user){
         res.render('edit-user.hbs', {
@@ -260,6 +273,27 @@ app.post('/add-employee.hbs', function(req,res){
     });
 
 
+});
+
+app.post('/add-date.hbs', function(req,res){
+    var sql = "INSERT INTO date (date_time, profile_a, profile_b, cust_rep, location, comments, user1_rating, user2_rating, booking_fee) VALUES (";
+
+    sql += "'" + req.body.date_time + "',";
+    sql += "'" + req.body.profile_a + "',";
+    sql += "'" + req.body.profile_b + "',";
+    sql += "'" + req.body.cust_rep + "',";
+    sql += "'" + req.body.location + "',";
+    sql += "'" + req.body.comments + "',";
+    sql += "'" + req.body.user1_rating + "',";
+    sql += "'" + req.body.user2_rating + "',";
+    sql += "'" + req.body.booking_fee +"')";
+
+    connection.query(sql, function(err, result){
+        if (err){
+            res.status(500).send({ error: err })
+        }
+        res.redirect("../homepage-manager-dates.hbs");
+    });
 });
 
 app.post('/edit-user/:ssn', (req,res)=>{
