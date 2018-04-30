@@ -164,6 +164,7 @@ app.get('/employee-mail-list/:ssn', (req,res)=>{
     });
 });
 
+
 app.get('/delete-user/:ssn', (req,res)=>{
 
     connection.query("DELETE FROM user WHERE ssn ='"+req.params.ssn +"'", function(err,user){
@@ -171,9 +172,23 @@ app.get('/delete-user/:ssn', (req,res)=>{
             res.status(500).send({ error: err });
         }
         else{
-            res.redirect("../homepage-manager.hbs");
+            res.redirect("../homepage-manager-dates.hbs");
         }
 
+    });
+});
+
+app.get('/delete-date', (req,res)=>{
+    console.log(req.query);
+    connection.query("DELETE FROM date WHERE profile_a ='" + req.query.profile_a + "' AND "
+        + "profile_b ='" + req.query.profile_b + "' AND "
+        + "date_time ='" + req.query.date_time + "';", function(err, user){
+        if(err){
+            res.status(500).send({ error: err });
+        }
+        else{
+            res.redirect("../homepage-manager.hbs");
+        }
     });
 });
 

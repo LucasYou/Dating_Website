@@ -127,6 +127,7 @@
                         <th>Rating(B)</th>
                         <th>Rating(T)</th>
                         <th>Time</th>
+                        <th>Action</th>
 
 		            </tr>
 		        </thead>
@@ -144,7 +145,10 @@
                             <td>{{user2_rating}}</td>
                             <td>{{math user1_rating "+" user2_rating}}</td>
                             <td>{{date_time}}</td>
-
+                            <td>
+                                <a href="delete-date?profile_a={{profile_a}}&profile_b={{profile_b}}&date_time={{date_time}}" style="font-family: 'Gaegu';border-radius:24px; margin-right:10px;" class="btn btn-danger">Delete</a>
+                            </td>
+                            
                         </tr>
                     {{/each}}
 		        </tbody>
