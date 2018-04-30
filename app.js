@@ -139,6 +139,31 @@ app.get('/edit-employee/:ssn', (req,res)=>{
     });
 });
 
+app.get('/employee-mail-list/:ssn', (req,res)=>{
+    connection.query("SELECT * FROM date WHERE cust_rep ='"+req.params.ssn +"'", function(err, dates){
+        console.log(dates);
+        var id_list = []
+        for (var d in dates) {
+            var date = dates[d];
+            ["profile_a", "profile_b"].forEach((p)=>{
+                if (!id_list.includes(date[p])) {
+                    id_list.push(date[p]);
+                }
+            });
+        }
+
+        var subquery = "SELECT owner_ssn as ssn FROM profile WHERE profile_id IN ( '" + id_list.join("','") + "')";
+        var query = "SELECT * FROM person WHERE ssn IN ("+ subquery +");";
+
+        connection.query(query, function(err, users){
+            console.log(users);
+            res.render('employee-mail-list.hbs', {
+                users: users
+            });
+        });
+    });
+});
+
 app.get('/delete-user/:ssn', (req,res)=>{
 
     connection.query("DELETE FROM user WHERE ssn ='"+req.params.ssn +"'", function(err,user){
