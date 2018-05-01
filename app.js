@@ -27,6 +27,10 @@ hbs.registerHelper("math", function(lvalue, operator, rvalue, options) {
     }[operator];
 });
 
+hbs.registerHelper('fullname', function(person) {
+    return person.firstname + " " + person.lastname;
+});
+
 var mysql = require('mysql')
 var connection = mysql.createConnection({
   multipleStatements: true,
@@ -140,23 +144,16 @@ app.get('/edit-employee/:ssn', (req,res)=>{
 });
 
 app.get('/employee-mail-list/:ssn', (req,res)=>{
-    connection.query("SELECT * FROM date WHERE cust_rep ='"+req.params.ssn +"'", function(err, dates){
-        console.log(dates);
-        var id_list = []
-        for (var d in dates) {
-            var date = dates[d];
-            ["profile_a", "profile_b"].forEach((p)=>{
-                if (!id_list.includes(date[p])) {
-                    id_list.push(date[p]);
-                }
-            });
-        }
+    var query = "SELECT profile_a as profile_id FROM date where cust_rep ='"+req.params.ssn +"' " +
+                "UNION " + 
+                "SELECT profile_b as profile_id FROM date where cust_rep ='"+req.params.ssn +"';"
+    connection.query(query, function(err, dates){
+        var id_list = dates.map(a => a.profile_id);
 
         var subquery = "SELECT owner_ssn as ssn FROM profile WHERE profile_id IN ( '" + id_list.join("','") + "')";
         var query = "SELECT * FROM person WHERE ssn IN ("+ subquery +");";
 
         connection.query(query, function(err, users){
-            console.log(users);
             res.render('employee-mail-list.hbs', {
                 users: users
             });
