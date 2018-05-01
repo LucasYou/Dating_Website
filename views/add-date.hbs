@@ -1,155 +1,70 @@
 <!doctype html>
 <html lang="en">
-      <head>
-        <!-- Required meta tags -->
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.css">
-    	<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
-        <link href='https://fonts.googleapis.com/css?family=Aclonica' rel='stylesheet'>
-        <link href="https://fonts.googleapis.com/css?family=Gaegu|Roboto" rel="stylesheet">
+<head>
+    {{> head_element }}
+</head>
 
-        <title>Tinker | Manager</title>
-            <style>
-                body{
+<body>
+    {{> header_with_back_button back_url="/homepage-manager-dates.hbs" }}
 
-                    background-size: cover;
-                    background-color: #FFF0F5;
-                    max-width: 100%;
-                    overflow-x: hidden;
-                }
-                h1{
-                    font-family: 'Gaegu';
-                }
-                .navbar-brand{
-                    font-size: 2.5em;
-                    margin-left: 70px;
-                    font-family: 'Aclonica';
-                }
+    <span class="content">
+        <form class="form-signin" method="post">
+            <h1 class="h3 mb-3 font-weight-normal" style="font-family: 'Gaegu'; margin:15px, 0, 15px, 0;">Record a new date</h1>
 
-                .content{
-                    display: -ms-flexbox;
-                    display: flex;
-                    -ms-flex-align: center;
-                    align-items: center;
-                    padding-top: 40px;
-                    padding-bottom: 40px;
-                    margin-top : 150px;
-                }
+            <label for="date_time">Date Time</label>
+            <input type="datetime-local" id="date_time" name="date_time" class="form-control" placeholder="(YYYY-MM-DD)" required>
+            <label for="v"></label>
 
-              .form-signin {
-                width: 100%;
-                max-width: 600px;
-                padding: 10px;
-                margin: auto;}
+            <label for="profile_a">User A</label>
+            <select id="profile_a" name="profile_a" class="form-control" required>
+                {{#each users}}
+                <option value="{{profile_id}}">{{profile_id}}</option>
+                {{/each}}
+            </select>
 
-              .form-signin .checkbox {
-                font-weight: 400;}
+            <label for="profile_a"></label>
+            <label for="profile_b">User B</label>
+            <select id="profile_b" name="profile_b" class="form-control" required>
+                {{#each users}}
+                <option value="{{profile_id}}">{{profile_id}}</option>
+                {{/each}}
+            </select>
 
-              .form-signin .form-control {
-                position: relative;
-                box-sizing: border-box;
-                height: auto;
-                padding: 10px;
-                font-size: 16px;}
+            <label for="profile_b"></label>
+            <label for="cust_rep">Customer Representative</label>
+            <select id="cust_rep" name="cust_rep" class="form-control" required>
+                {{#each reps}}
+                <option value="{{ssn}}">{{ssn}}</option>
+                {{/each}}
+            </select>
+            <label for="cust_rep"></label>
 
-              .form-signin .form-control:focus {
-                z-index: 2;}
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" class="form-control" placeholder="The Mall" required>
+            <label for="v"></label>
 
-                .form-signin input[type="email"] {
-                  margin-bottom: -1px;
-                  border-bottom-right-radius: 0;
-                  border-bottom-left-radius: 0;}
+            <label for="comments">Comments</label>
+            <input type="text" id="comments" name="comments" class="form-control" placeholder="Put any comments here" required>
+            <label for="v"></label>
 
-                .form-signin input[type="password"] {
-                  margin-bottom: -1px;
-                  border-top-left-radius: 0;
-                  border-top-right-radius: 0;}
-                  label{
-                      font-family: 'Gaegu';
-                  }
-                  input{
-                      margin-bottom: 10px;
-                  }
+            <label for="user1_rating">User A Rating</label>
+            <input type="number" id="user1_rating" name="user1_rating" class="form-control" placeholder="1 to 5" min="1" max="5" step="1"
+                required>
+            <label for="v"></label>
 
+            <label for="user2_rating">User B Rating</label>
+            <input type="number" id="user2_rating" name="user2_rating" class="form-control" placeholder="1 to 5" min="1" max="5" step="1"
+                required>
+            <label for="v"></label>
 
+            <label for="booking_fee">Booking Fee</label>
+            <input type="number" id="booking_fee" name="booking_fee" class="form-control" placeholder="Booking fee" step="0.01" required>
+            <label for="v"></label>
 
+            <button class="btn btn-lg btn-success btn-block" type="submit">Confirm</button>
+        </form>
+    </span>
+</body>
 
-            </style>
-      </head>
-
-      <body>
-              <nav class="navbar navbar-expand-lg navbar-light bg-light">
-
-                  <a class="navbar-brand" href="homepage-manager-employee.hbs">tinker</a>
-
-                  <ul class="navbar-nav ml-auto">
-                      <a href ="homepage-manager-employee.hbs" class = "btn btn-danger btn-lg btn-block" style="margin-right:30px; border-radius:24px;font-family: 'Gaegu'"> Cancel</a>
-                  </ul>
-
-              </nav>
-              <span class ="content">
-              <form class="form-signin" method="post">
-                    <h1 class="h3 mb-3 font-weight-normal" style="font-family: 'Gaegu'; margin:15px, 0, 15px, 0;">Record a new date</h1>
-                      <label for="date_time">Date Time</label>
-                      <input type="datetime-local" id="date_time" name="date_time" class="form-control" placeholder="(YYYY-MM-DD)" required>
-                      <label for="v"></label>
-
-                      <label for="profile_a">User A</label>
-                      <select id="profile_a" name="profile_a" class="form-control" required>
-                        {{#each users}}
-                          <option value="{{profile_id}}">{{profile_id}}</option>
-                        {{/each}}
-                      </select>
-                      <label for="profile_a"></label> 
-
-                      <label for="profile_b">User B</label>
-                      <select id="profile_b" name="profile_b" class="form-control" required>
-                        {{#each users}}
-                          <option value="{{profile_id}}">{{profile_id}}</option>
-                        {{/each}}
-                      </select>
-                      <label for="profile_b"></label> 
-
-                      <label for="cust_rep">Customer Representative</label>
-                      <select id="cust_rep" name="cust_rep" class="form-control" required>
-                        {{#each reps}}
-                          <option value="{{ssn}}">{{ssn}}</option>
-                        {{/each}}
-                      </select>
-                      <label for="cust_rep"></label> 
-
-                      <label for="location">Location</label>
-                      <input type="text" id="location" name="location" class="form-control" placeholder="The Mall" required>
-                      <label for="v"></label>
-
-                      <label for="comments">Comments</label>
-                      <input type="text" id="comments" name="comments" class="form-control" placeholder="Put any comments here" required>
-                      <label for="v"></label>
-                      
-                      <label for="user1_rating">User A Rating</label>
-                      <input type="number" id="user1_rating" name="user1_rating" class="form-control" placeholder="1 to 5" min="1" max="5" step="1" required>
-                      <label for="v"></label>
-
-                      <label for="user2_rating">User B Rating</label>
-                      <input type="number" id="user2_rating" name="user2_rating" class="form-control" placeholder="1 to 5" min="1" max="5" step="1" required>
-                      <label for="v"></label>
-
-                      <label for="booking_fee">Booking Fee</label>
-                      <input type="number" id="booking_fee" name="booking_fee" class="form-control" placeholder="Booking fee" step="0.01" required>
-                      <label for="v"></label>
-
-                    <button class="btn btn-lg btn-success btn-block" type="submit">Confirm</button>
-                 </form>
-             </span>
-
-
-              <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-              <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-              <script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap4.min.js" ></script>
-
-              <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" ></script>
-              <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
-      </body>
+</html>
