@@ -36,19 +36,85 @@ var connection = mysql.createConnection({
   database : 'dating'
 
 });
-
 connection.connect();
 
+//Default page
 app.get('/', (req,res) =>{
     res.redirect('home.html');
 });
 
+app.post("/sign-in.html", function(req,res){
+    var db_email = 'SELECT email FROM person WHERE email = ' + connection.escape(req.body.email);
+    connection.query(db_email, function(error, email, fields){
+        if(email.length == 1){
+            var db_password = 'SELECT password FROM person WHERE email = ' + connection.escape(email[0].email);
+            connection.query(db_password, function(error, password, fields){
+                if(password[0].password.trim() == req.body.password){
+                    //Matching email & Password
+                    //Check if the login is user/custrep/manager
+                    var db_ssn = 'SELECT ssn FROM person WHERE email = ' + connection.escape(email[0].email);
+                    connection.query(db_ssn, function(error, ssn, fields){
+                        var db_user_ssn = 'SELECT ssn FROM user WHERE ssn = ' + connection.escape(ssn[0].ssn);
+                        connection.query(db_user_ssn, function(error, user_ssn, fields){
+                            if(user_ssn.length == 1 ){
+                                //Is a user
+                                console.log("user login");
+                                res.render('homepage-user.hbs', {
+                                    username: email[0].email
+                                });
+                            }
+                            else{
+                                //Is a custrep/manager
+                                var db_employee_ssn = 'SELECT ssn FROM employee WHERE role = "CustRep" AND ssn= ' + connection.escape(ssn[0].ssn);
+                                connection.query(db_employee_ssn, function(error, employee_ssn, fields){
+                                    if(employee_ssn.length >=1){
+                                        //Is a cust rep
+                                        console.log("custrep login");
+                                        var db_employee_ssn = 'SELECT ssn FROM employee WHERE ssn = ' + connection.escape(ssn[0].ssn);
+                                        connection.query(db_employee_ssn, function(error, employee_ssn, fields){
+                                            connection.query("SELECT *, DATE_FORMAT(date_of_last_act, '%Y-%m-%d %T') as date_of_last_act FROM user, person WHERE user.ssn = person.ssn", function(error, user, fields){
+                                                res.render('./homepage-custrep.hbs',{
+                                                    users : user
+                                                });
+                                            });
+                                        });
+                                    }
+                                    else{
+                                        //is a manager
+                                        console.log("manager login");
+                                        var db_employee_ssn = 'SELECT ssn FROM employee WHERE ssn = ' + connection.escape(ssn[0].ssn);
+                                        connection.query(db_employee_ssn, function(error, employee_ssn, fields){
+                                            connection.query("SELECT *, DATE_FORMAT(date_of_last_act, '%Y-%m-%d %T') as date_of_last_act FROM user, person WHERE user.ssn = person.ssn", function(error, user, fields){
+                                                res.render('./homepage-manager.hbs',{
+                                                    users : user
+                                                });
+                                            });
+                                        });//end connection db_employee)ssn
+                                    }//end else
 
+                                });//end connection db_employee)ssn
+                                //res.send("Custrep/manager");
+                            }
+                        });//end connection db_user_ssn
+                    });//end connection db_ssn
+                }//end if(password)
+                else{
+                    //res.send(connection.escape(req.body.password));
+                    res.write("Wrong password!\n");
+                    res.end();
+                }
+            });//end connection db_password
+        }//end if(email)
+        else res.send("Email does not exist");
+    });//end connection db_email
+});
 
-
+app.post("/sign-up.html", function(req,res){
+    console.log("Sign up page");
+});
 
 /*
-Managers gets
+Managers
 */
 app.get('/homepage-manager.hbs', (req,res)=>{
     connection.query("SELECT *, DATE_FORMAT(date_of_last_act, '%Y-%m-%d %T') as date_of_last_act FROM user, person WHERE user.ssn = person.ssn", function(error, user, fields){
@@ -152,70 +218,6 @@ app.get('/delete-employee/:ssn', (req,res)=>{
     });
 });
 
-
-/*
-Managers post
-*/
-app.post("/sign-in.html", function(req,res){
-    var db_email = 'SELECT email FROM person WHERE email = ' + connection.escape(req.body.email);
-    connection.query(db_email, function(error, email, fields){
-        if(email.length == 1){
-            var db_password = 'SELECT password FROM person WHERE email = ' + connection.escape(email[0].email);
-            connection.query(db_password, function(error, password, fields){
-                if(password[0].password.trim() == req.body.password){
-                    //Matching email & Password
-                    //Check if the login is user/custrep/manager
-                    var db_ssn = 'SELECT ssn FROM person WHERE email = ' + connection.escape(email[0].email);
-                    connection.query(db_ssn, function(error, ssn, fields){
-                        var db_user_ssn = 'SELECT ssn FROM user WHERE ssn = ' + connection.escape(ssn[0].ssn);
-                        connection.query(db_user_ssn, function(error, user_ssn, fields){
-                            if(user_ssn.length == 1 ){
-                                //Is a user
-                                res.render('homepage-user.hbs', {
-                                    username: email[0].email
-                                });
-                            }
-                            else{
-                                //Is a custrep/manager
-                                var db_employee_ssn = 'SELECT ssn FROM employee WHERE role = "CustRep" AND ssn= ' + connection.escape(ssn[0].ssn);
-                                connection.query(db_employee_ssn, function(error, employee_ssn, fields){
-                                    if(employee_ssn.length >=1){
-                                        //Is a cust rep
-                                        console.log("custrep login");
-                                    }
-                                    else{
-                                        //is a manager
-                                        var db_employee_ssn = 'SELECT ssn FROM employee WHERE ssn = ' + connection.escape(ssn[0].ssn);
-                                        connection.query(db_employee_ssn, function(error, employee_ssn, fields){
-                                            connection.query("SELECT *, DATE_FORMAT(date_of_last_act, '%Y-%m-%d %T') as date_of_last_act FROM user, person WHERE user.ssn = person.ssn", function(error, user, fields){
-                                                res.render('./homepage-manager.hbs',{
-                                                    users : user
-                                                });
-                                            });
-                                        });//end connection db_employee)ssn
-                                    }//end else
-
-                                });//end connection db_employee)ssn
-                                //res.send("Custrep/manager");
-                            }
-                        });//end connection db_user_ssn
-                    });//end connection db_ssn
-                }//end if(password)
-                else{
-                    //res.send(connection.escape(req.body.password));
-                    res.write("Wrong password!\n");
-                    res.end();
-                }
-            });//end connection db_password
-        }//end if(email)
-        else res.send("Email does not exist");
-    });//end connection db_email
-});
-
-app.post("/sign-up.html", function(req,res){
-    console.log("Sign up page");
-});
-
 app.post('/add-user.hbs', function(req,res){
 
     var sql = "INSERT INTO user (ssn, ppp, rating, date_of_last_act) VALUES (";
@@ -296,6 +298,151 @@ app.post('/edit-employee/:ssn', (req,res)=>{
     });
 
 
+});
+
+
+/*
+Customer Representative
+*/
+app.get('/homepage-custrep.hbs', (req,res)=>{
+    connection.query("SELECT *, DATE_FORMAT(date_of_last_act, '%Y-%m-%d %T') as date_of_last_act FROM user, person WHERE user.ssn = person.ssn", function(error, user, fields){
+        res.render('./homepage-custrep.hbs',{
+            users : user
+        });
+    });
+});
+
+app.get('/add-user-custrep.hbs', (req,res) =>{
+
+    res.render('add-user.hbs');
+});
+
+app.get('/edit-user-custrep/:ssn', (req,res)=>{
+    connection.query("SELECT ssn, ppp,rating, DATE_FORMAT(date_of_last_act, '%Y-%m-%d %T') as date_of_last_act FROM user WHERE ssn ='"+req.params.ssn +"'", function(err,user){
+        res.render('edit-user.hbs', {
+            users: user
+        });
+    });
+});
+
+app.get('/delete-user-custrep/:ssn', (req,res)=>{
+
+    connection.query("DELETE FROM user WHERE ssn ='"+req.params.ssn +"'", function(err,user){
+        if(err){
+            res.status(500).send({ error: err });
+        }
+        else{
+            res.redirect("../homepage-custrep.hbs");
+        }
+
+    });
+});
+
+app.get('/homepage-custrep-employee.hbs', (req,res)=>{
+    connection.query('SELECT *,   DATE_FORMAT(start_date, "%Y-%m-%d") as start_date FROM employee, person WHERE role != "Manager" AND employee.ssn = person.ssn', function(error, employee, fields){
+        res.render('homepage-custrep-employee.hbs',{
+            employees : employee
+        });
+    });
+});
+
+app.get('/homepage-custrep-mailing-list.hbs', (req,res)=>{
+    connection.query("SELECT * FROM user, person WHERE user.ssn = person.ssn", function(error, user, fields){
+        res.render('homepage-custrep-mailing-list.hbs',{
+            users : user
+        });
+    });
+});
+
+app.get('/homepage-custrep-profile-rating.hbs', (req,res)=>{
+    connection.query("SELECT customer, AVG(Rating) as Rating FROM profile_rating GROUP BY customer ", function(error, user, fields){
+        res.render('homepage-custrep-profile-rating.hbs',{
+            users : user
+        });
+    });
+});
+
+app.get('/homepage-custrep-dates.hbs', (req,res)=>{
+    connection.query("SELECT *, DATE_FORMAT(date_time, '%Y-%m-%d %T') as date_time FROM date", function(error, date, fields){
+        res.render('homepage-custrep-dates.hbs',{
+            dates : date
+        });
+    });
+});
+
+app.get('/homepage-custrep-add-dates.hbs', (req,res)=>{
+    connection.query("SELECT * FROM profile", function(error, user, fields){
+        connection.query("SELECT * FROM employee", function(error, reps, fields){
+            res.render('homepage-custrep-add-dates.hbs',{
+                users : user,
+                reps : reps
+            });
+        });
+    });
+});
+
+
+
+
+app.post('/add-user-custrep.hbs', function(req,res){
+
+    var sql = "INSERT INTO user (ssn, ppp, rating, date_of_last_act) VALUES (";
+    var cur_date = new Date().toLocaleString();
+
+    sql += "'" + req.body.ssn + "',";
+    sql += "'" + req.body.ppp + "',";
+    sql += "'" + req.body.rating + "',";
+    sql += "'" + cur_date +"')";
+
+    console.log(sql);
+
+    connection.query(sql, function(err, result){
+        if (err){
+            res.status(500).send({ error: err })
+        }
+        connection.query("SELECT * FROM user, person WHERE user.ssn = person.ssn", function(error, user, fields){
+            res.redirect("../homepage-custrep.hbs");
+        });
+
+    });
+});
+
+app.post('/edit-user-custrep/:ssn', (req,res)=>{
+    var sql = "UPDATE user SET";
+    sql += " ppp='"                      +req.body.ppp+"',";
+    sql += " rating='"                   +req.body.rating+"',";
+    sql += " date_of_last_act='"         +req.body.time+"'";
+    sql += " WHERE user.ssn ='"          +req.params.ssn +"'";
+
+    connection.query(sql, function(err,user){
+        if(err){
+            res.status(500).send({ error: err });
+        }
+        else{
+            res.redirect("../homepage-custrep.hbs");
+        }
+    });
+});
+
+app.post('/homepage-custrep-add-dates.hbs', function(req,res){
+    var sql = "INSERT INTO date (date_time, profile_a, profile_b, cust_rep, location, comments, user1_rating, user2_rating, booking_fee) VALUES (";
+
+    sql += "'" + req.body.date_time + "',";
+    sql += "'" + req.body.profile_a + "',";
+    sql += "'" + req.body.profile_b + "',";
+    sql += "'" + req.body.cust_rep + "',";
+    sql += "'" + req.body.location + "',";
+    sql += "'" + req.body.comments + "',";
+    sql += "'" + req.body.user1_rating + "',";
+    sql += "'" + req.body.user2_rating + "',";
+    sql += "'" + req.body.booking_fee +"')";
+
+    connection.query(sql, function(err, result){
+        if (err){
+            res.status(500).send({ error: err })
+        }
+        res.redirect("../homepage-custrep-dates.hbs");
+    });
 });
 
 app.listen(9000, () => {
