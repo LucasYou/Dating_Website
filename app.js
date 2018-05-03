@@ -27,6 +27,8 @@ hbs.registerHelper("math", function(lvalue, operator, rvalue, options) {
     }[operator];
 });
 
+
+
 var mysql = require('mysql')
 var connection = mysql.createConnection({
   multipleStatements: true,
@@ -58,9 +60,11 @@ app.post("/sign-in.html", function(req,res){
                         connection.query(db_user_ssn, function(error, user_ssn, fields){
                             if(user_ssn.length == 1 ){
                                 //Is a user
-                                console.log("user login");
-                                res.render('homepage-user.hbs', {
-                                    username: email[0].email
+                                connection.query("SELECT *, DATE_FORMAT(creation_date, '%Y-%m-%d %T') as creation_date, DATE_FORMAT(last_mod_date, '%Y-%m-%d %T') as last_mod_date FROM profile WHERE owner_ssn !="+ connection.escape(ssn[0].ssn), function(error, profile, fields){
+                                    res.render('./homepage-user.hbs',{
+                                        cur_ssn : ssn[0].ssn,
+                                        profiles : profile
+                                    });
                                 });
                             }
                             else{
@@ -69,7 +73,6 @@ app.post("/sign-in.html", function(req,res){
                                 connection.query(db_employee_ssn, function(error, employee_ssn, fields){
                                     if(employee_ssn.length >=1){
                                         //Is a cust rep
-                                        console.log("custrep login");
                                         var db_employee_ssn = 'SELECT ssn FROM employee WHERE ssn = ' + connection.escape(ssn[0].ssn);
                                         connection.query(db_employee_ssn, function(error, employee_ssn, fields){
                                             connection.query("SELECT *, DATE_FORMAT(date_of_last_act, '%Y-%m-%d %T') as date_of_last_act FROM user, person WHERE user.ssn = person.ssn", function(error, user, fields){
@@ -81,7 +84,6 @@ app.post("/sign-in.html", function(req,res){
                                     }
                                     else{
                                         //is a manager
-                                        console.log("manager login");
                                         var db_employee_ssn = 'SELECT ssn FROM employee WHERE ssn = ' + connection.escape(ssn[0].ssn);
                                         connection.query(db_employee_ssn, function(error, employee_ssn, fields){
                                             connection.query("SELECT *, DATE_FORMAT(date_of_last_act, '%Y-%m-%d %T') as date_of_last_act FROM user, person WHERE user.ssn = person.ssn", function(error, user, fields){
@@ -110,9 +112,24 @@ app.post("/sign-in.html", function(req,res){
 });
 
 app.post("/sign-up.html", function(req,res){
-    console.log("Sign up page");
+    var db_person = "INSERT INTO person VALUES("+connection.escape(req.body.ssn)+","+connection.escape(req.body.password)+","
+    +connection.escape(req.body.firstname)+","+connection.escape(req.body.lastname)+","+connection.escape(req.body.street)+","
+    +connection.escape(req.body.city)+","+connection.escape(req.body.state)+","+req.body.zipcode+","+
+    connection.escape(req.body.email)+","+connection.escape(req.body.telephone)+")";
+    connection.query(db_person, function(err, person){
+        if (err){
+            res.status(500).send({ error: err })
+        }
+        var cur_date = new Date().toLocaleString();
+        var db_user = "INSERT INTO user VALUES("+connection.escape(req.body.ssn)+",'User-User',0,'"+cur_date+"')";
+        connection.query(db_user, function(err, user){
+            if (err){
+                res.status(500).send({ error: err })
+            }
+            res.redirect('/');
+        });
+    });
 });
-
 /*
 Managers
 */
@@ -185,7 +202,6 @@ app.get('/edit-user/:ssn', (req,res)=>{
 
 app.get('/edit-employee/:ssn', (req,res)=>{
     connection.query("SELECT *, DATE_FORMAT(start_date, '%Y-%m-%d') as start_date FROM employee WHERE ssn ='"+req.params.ssn +"'", function(err,employee){
-        console.log(employee);
         res.render('edit-employee.hbs', {
             employees: employee
         });
@@ -246,8 +262,6 @@ app.post('/add-employee.hbs', function(req,res){
     sql += "'" + req.body.role + "',";
     sql += "'" + req.body.start_date + "',";
     sql += "'" + req.body.hourly_rate +"')";
-
-    //console.log(sql);
 
     connection.query(sql, function(err, result){
         if (err){
@@ -381,9 +395,6 @@ app.get('/homepage-custrep-add-dates.hbs', (req,res)=>{
     });
 });
 
-
-
-
 app.post('/add-user-custrep.hbs', function(req,res){
 
     var sql = "INSERT INTO user (ssn, ppp, rating, date_of_last_act) VALUES (";
@@ -393,9 +404,6 @@ app.post('/add-user-custrep.hbs', function(req,res){
     sql += "'" + req.body.ppp + "',";
     sql += "'" + req.body.rating + "',";
     sql += "'" + cur_date +"')";
-
-    console.log(sql);
-
     connection.query(sql, function(err, result){
         if (err){
             res.status(500).send({ error: err })
@@ -444,6 +452,86 @@ app.post('/homepage-custrep-add-dates.hbs', function(req,res){
         res.redirect("../homepage-custrep-dates.hbs");
     });
 });
+
+/*
+User
+*/
+
+app.get('/homepage-user/:cur_ssn', (req,res)=>{
+    connection.query("SELECT *, DATE_FORMAT(creation_date, '%Y-%m-%d %T') as creation_date, DATE_FORMAT(last_mod_date, '%Y-%m-%d %T') as last_mod_date FROM profile WHERE owner_ssn !="+ connection.escape(req.params.cur_ssn), function(error, profile, fields){
+        res.render('./homepage-user.hbs',{
+            cur_ssn : req.params.cur_ssn,
+            profiles : profile
+        });
+    });
+});
+
+app.get('/homepage-user-pending/:cur_ssn', (req,res)=>{
+    var time =  new Date().toLocaleString();
+    connection.query("SELECT *, DATE_FORMAT(date_time, '%Y-%m-%d %T') as date_time FROM date, profile WHERE owner_ssn ='"+req.params.cur_ssn +"' AND (profile_id = profile_a or profile_id = profile_b) AND date_time >= " + connection.escape(time), function(err,user){
+        res.render('homepage-user-pending.hbs', {
+            cur_ssn : req.params.cur_ssn,
+            users: user
+        });
+    });
+});
+
+app.get('/homepage-user-pass/:cur_ssn', (req,res)=>{
+    var time =  new Date().toLocaleString();
+    connection.query("SELECT *, DATE_FORMAT(date_time, '%Y-%m-%d %T') as date_time FROM date, profile WHERE owner_ssn ='"+req.params.cur_ssn +"' AND (profile_id = profile_a or profile_id = profile_b) AND date_time < " + connection.escape(time), function(err,user){
+        res.render('homepage-user-pass.hbs', {
+            cur_ssn : req.params.cur_ssn,
+            users: user
+        });
+    });
+});
+
+app.get('/homepage-user-most-active/:cur_ssn', (req,res)=>{
+    connection.query("SELECT * FROM most_active", function(err,user){
+        res.render('homepage-user-most-active.hbs', {
+            cur_ssn : req.params.cur_ssn,
+            users: user
+        });
+    });
+});
+
+app.get('/homepage-user-highly-rated/:cur_ssn', (req,res)=>{
+    connection.query("SELECT customer, AVG(Rating) as Rating FROM profile_rating GROUP BY customer ", function(error, user, fields){
+        res.render('homepage-user-highly-rated.hbs',{
+            cur_ssn : req.params.cur_ssn,
+            users : user
+        });
+    });
+});
+
+app.get('/homepage-user-suggestions/:cur_ssn', (req,res)=>{
+    connection.query("SELECT *, DATE_FORMAT(date_time, '%Y-%m-%d %T') as date_time FROM suggestedby", function(err, suggestedby){
+        res.render('homepage-user-suggestions.hbs',{
+            cur_ssn : req.params.cur_ssn,
+            suggestedbys: suggestedby
+        });
+    });
+});
+
+app.get('/homepage-user-pending/delete-date/:date_id', (req,res)=>{
+
+    connection.query("DELETE FROM date WHERE date_id ='"+req.params.date_id +"'", function(err,user){
+        if(err){
+            res.status(500).send({ error: err });
+        }
+        else{
+            res.redirect("http://localhost:9000/homepage-user-pending/888-88-8888");
+        }
+
+    });
+
+
+});
+
+app.get('/homepage-user/like/:owner_ssn', (req,res)=>{
+    console.log(req.params.user_ssn);
+});
+
 
 app.listen(9000, () => {
     console.log("Server running at port 9000");
