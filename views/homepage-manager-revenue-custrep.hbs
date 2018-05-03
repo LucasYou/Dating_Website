@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+<<<<<<< HEAD
   <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -105,8 +106,15 @@
           </ul>
       </nav>
 
+=======
+>>>>>>> 7562d395067cf63213fc97fe7a6670ea63716aea
 
+<head>
+    {{> head_element }}
+</head>
 
+<body>
+    {{> header }}
 	<div class="container" style="margin-top : 50px">
         <h1 style="margin: 0px 0px 30px 20px;">All Revenue by Customer Representative</h1>
 
@@ -141,31 +149,6 @@
 		    </table>
 	</div>
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap4.min.js" ></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" ></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
-
-	<script>
-		$(document).ready(function() {
-	    $('#example').DataTable();
-	});
-
-    $(document).ready(function() {
-    var table = $('#example').DataTable();
-    $('#example tbody').on( 'mouseenter', 'td', function () {
-        var colIdx = table.cell(this).index().column;
-
-        $( table.cells().nodes() ).removeClass( 'highlight' );
-        $( table.column( colIdx ).nodes() ).addClass( 'highlight' );
-        });
-    });
-
-
-	</script>
+    {{> table_script }}
   </body>
 </html>
